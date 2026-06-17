@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 문장 프레임 웹앱 — I'm Going to Meet My Friends</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+:root {
+  --bg:#ffffff; --bg2:#f8f8f6; --bg3:#f0ede6;
+  --text1:#1a1a18; --text2:#5f5e5a; --text3:#888780;
+  --border:rgba(0,0,0,0.11); --border2:rgba(0,0,0,0.20);
+  --r-md:8px; --r-lg:12px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1e1e1c;--bg2:#272725;--bg3:#212120;
+    --text1:#f0ede6;--text2:#b4b2a9;--text3:#888780;
+    --border:rgba(255,255,255,0.11);--border2:rgba(255,255,255,0.20);
+  }
+}
+body { font-family:var(--font); background:var(--bg3); min-height:100vh; padding:1rem; color:var(--text1); }
+.app { max-width:660px; margin:0 auto; padding:0.75rem 0.25rem 3rem; }
+
+/* Header */
+.header { text-align:center; margin-bottom:1.25rem; padding:1.25rem 1rem; background:var(--bg); border-radius:var(--r-lg); border:0.5px solid var(--border); }
+.header h1 { font-size:19px; font-weight:500; color:var(--text1); margin-bottom:4px; }
+.header p { font-size:12px; color:var(--text2); line-height:1.6; }
+
+/* Inquiry */
+.inquiry-q { background:#EEEDFE; border-radius:var(--r-lg); padding:0.75rem 1rem; margin-bottom:1.25rem; border-left:3px solid #7F77DD; }
+.iq-label { font-size:10px; color:#534AB7; font-weight:500; margin-bottom:3px; letter-spacing:.03em; text-transform:uppercase; }
+.iq-text { font-size:12px; color:#3C3489; line-height:1.75; }
+.iq-en { color:#7F77DD; font-size:11px; }
+
+/* Main Tabs */
+.main-tabs { display:flex; margin-bottom:1.25rem; border-radius:var(--r-lg); overflow:hidden; border:0.5px solid var(--border2); }
+.main-tab { flex:1; padding:12px 8px; text-align:center; cursor:pointer; background:var(--bg2); border:none; font-family:var(--font); font-size:13px; color:var(--text2); transition:all .15s; }
+.main-tab:first-child { border-right:0.5px solid var(--border2); }
+.main-tab.act-on { background:#E1F5EE; color:#085041; font-weight:500; }
+.main-tab.ref-on { background:#FAEEDA; color:#633806; font-weight:500; }
+.tab-sub { font-size:10px; display:block; opacity:.7; margin-top:2px; }
+
+/* Panels */
+.panel { display:none; } .panel.active { display:block; }
+
+/* Structure Banner */
+.struct-banner { border-radius:var(--r-lg); padding:.875rem 1rem; margin-bottom:1rem; }
+.struct-banner .sb-label { font-size:11px; font-weight:500; margin-bottom:5px; }
+.struct-banner .sb-frame { font-size:15px; font-weight:500; line-height:1.9; }
+.struct-banner .sb-note { font-size:11px; margin-top:5px; }
+.sb-pill { padding:2px 9px; border-radius:6px; display:inline; }
+
+/* Level Tabs */
+.level-tabs { display:flex; gap:8px; margin-bottom:1rem; }
+.level-btn { flex:1; padding:9px 6px; border:0.5px solid var(--border2); border-radius:var(--r-md); background:var(--bg); cursor:pointer; text-align:center; transition:all .15s; }
+.level-btn:hover { background:var(--bg2); }
+.level-btn.on-a { background:#EAF3DE; border-color:#3B6D11; }
+.level-btn.on-b { background:#E6F1FB; border-color:#185FA5; }
+.level-btn.on-c { background:#EEEDFE; border-color:#534AB7; }
+.badge { font-size:10px; font-weight:500; padding:2px 7px; border-radius:99px; display:inline-block; margin-bottom:3px; }
+.ba { background:#C0DD97; color:#27500A; }
+.bb { background:#B5D4F4; color:#0C447C; }
+.bc { background:#CECBF6; color:#3C3489; }
+.lv-name { font-size:11px; color:var(--text2); display:block; }
+.lv-desc { font-size:9px; color:var(--text3); display:block; margin-top:1px; }
+
+/* Cards */
+.card { background:var(--bg); border:0.5px solid var(--border); border-radius:var(--r-lg); padding:1rem 1.25rem; margin-bottom:1rem; }
+.card-label { font-size:12px; color:var(--text2); margin-bottom:.6rem; display:flex; align-items:center; gap:6px; }
+.card-label i { font-size:14px; }
+
+/* Topic Grid */
+.topic-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(136px,1fr)); gap:8px; }
+.topic-chip { padding:9px 8px; border:0.5px solid var(--border); border-radius:var(--r-md); cursor:pointer; font-size:12px; color:var(--text1); background:var(--bg2); text-align:center; transition:all .15s; line-height:1.5; }
+.topic-chip:hover { border-color:var(--border2); background:var(--bg); }
+.topic-chip.sel-a { background:#EAF3DE; border-color:#3B6D11; color:#27500A; font-weight:500; }
+.topic-chip.sel-b { background:#E6F1FB; border-color:#185FA5; color:#0C447C; font-weight:500; }
+.topic-chip.sel-c { background:#EEEDFE; border-color:#534AB7; color:#3C3489; font-weight:500; }
+
+/* Frame Box */
+.frame-box { background:var(--bg2); border-radius:var(--r-md); padding:.85rem 1rem; font-size:14px; color:var(--text1); line-height:2; min-height:52px; }
+.fg { color:#3B6D11; font-weight:500; }
+.fb { color:#185FA5; font-weight:500; }
+.fp { color:#534AB7; font-weight:500; }
+.blank { color:var(--text3); font-style:italic; }
+
+/* Example tags */
+.ex-wrap { margin-top:10px; }
+.ex-label { font-size:11px; color:var(--text3); margin-bottom:5px; }
+.ex-tags { display:flex; flex-wrap:wrap; gap:4px; }
+.ex-tag { padding:4px 10px; border:0.5px solid var(--border2); border-radius:99px; font-size:11px; color:var(--text2); background:var(--bg2); cursor:pointer; transition:all .12s; }
+.ex-tag:hover { background:var(--bg); border-color:var(--border2); color:var(--text1); }
+.ex-tag.sel-a { background:#EAF3DE; border-color:#3B6D11; color:#27500A; }
+.ex-tag.sel-b { background:#E6F1FB; border-color:#185FA5; color:#0C447C; }
+.ex-tag.sel-c { background:#EEEDFE; border-color:#534AB7; color:#3C3489; }
+
+/* Result */
+.result-box { background:var(--bg); border:0.5px solid var(--border); border-radius:var(--r-lg); padding:1.25rem; margin-top:.75rem; }
+.result-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.result-lbl { font-size:11px; color:var(--text3); letter-spacing:.04em; }
+.result-sent { font-size:18px; font-weight:500; line-height:1.7; margin-bottom:10px; }
+.result-kr { font-size:13px; color:var(--text2); border-top:0.5px solid var(--border); padding-top:10px; line-height:1.6; }
+.result-tip { font-size:12px; background:#EEEDFE; color:#534AB7; border-radius:var(--r-md); padding:8px 10px; margin-top:10px; line-height:1.6; }
+.copy-btn { display:flex; align-items:center; gap:4px; font-size:12px; color:var(--text2); background:none; border:0.5px solid var(--border); border-radius:var(--r-md); padding:4px 10px; cursor:pointer; font-family:var(--font); transition:all .12s; }
+.copy-btn:hover { border-color:var(--border2); }
+
+/* Write area */
+.write-section { margin-top:1.25rem; }
+.write-label { font-size:12px; color:var(--text2); margin-bottom:.5rem; display:flex; align-items:center; gap:6px; font-weight:500; }
+.write-area { width:100%; padding:12px 14px; border:0.5px solid var(--border2); border-radius:var(--r-md); font-family:var(--font); font-size:14px; color:var(--text1); background:var(--bg); resize:none; outline:none; line-height:1.7; min-height:80px; }
+.write-area:focus { border-color:#185FA5; box-shadow:0 0 0 2px rgba(24,95,165,0.10); }
+.write-area::placeholder { color:var(--text3); }
+.write-hint { font-size:11px; color:var(--text3); margin-top:5px; line-height:1.6; }
+
+/* Reflection */
+.ref-intro { background:#FAEEDA; border-radius:var(--r-lg); padding:.875rem 1rem; margin-bottom:1rem; border-left:3px solid #EF9F27; }
+.ri-label { font-size:11px; color:#633806; font-weight:500; margin-bottom:4px; }
+.ri-text { font-size:12px; color:#854F0B; line-height:1.7; }
+
+.goal-grid { display:flex; flex-direction:column; gap:6px; }
+.goal-chip { background:var(--bg2); border:0.5px solid var(--border); border-radius:var(--r-md); padding:10px 12px; cursor:pointer; transition:all .12s; display:flex; align-items:flex-start; gap:10px; }
+.goal-chip:hover { border-color:var(--border2); background:var(--bg); }
+.goal-chip.selected { background:#FAEEDA; border-color:#EF9F27; }
+.gc-kr { font-size:13px; color:var(--text1); display:block; }
+.gc-en { font-size:11px; color:var(--text3); display:block; margin-top:2px; }
+.goal-chip.selected .gc-kr { color:#633806; font-weight:500; }
+.goal-chip.selected .gc-en { color:#854F0B; }
+
+/* Reset btn */
+.reset-btn { font-size:12px; padding:7px 14px; border:0.5px solid var(--border2); border-radius:var(--r-md); background:none; cursor:pointer; color:var(--text2); font-family:var(--font); transition:all .12s; margin-top:.75rem; }
+.reset-btn:hover { background:var(--bg2); }
+
+@media(max-width:460px){
+  .level-tabs { flex-direction:column; }
+  .topic-grid { grid-template-columns:1fr 1fr; }
+  .tab-sub { display:none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <h1>✏️ 영어 문장 프레임 웹앱</h1>
+    <p>Lesson 5 · I'm Going to Meet My Friends<br>우리 반 공동 목표와 나의 실천 계획을 영어로 표현해 봐요</p>
+  </div>
+
+  <div class="inquiry-q">
+    <div class="iq-label">탐구 질문</div>
+    <div class="iq-text">
+      나의 책임 있는 계획은 공동체의 필요와 어떻게 연결될 수 있는가?<br>
+      <span class="iq-en">How can my responsible plan connect to the needs of our community?</span>
+    </div>
+  </div>
+
+  <!-- Main Tabs -->
+  <div class="main-tabs">
+    <button class="main-tab act-on" onclick="switchTab('act')" id="tab-act">
+      🏫 활동 1·2
+      <span class="tab-sub">우리 반 공동 목표 — We are going to</span>
+    </button>
+    <button class="main-tab" onclick="switchTab('ref')" id="tab-ref">
+      🌱 Reflection
+      <span class="tab-sub">나의 실천 계획 — I'm going to</span>
+    </button>
+  </div>
+
+  <!-- ══════ PANEL: 활동 1·2 ══════ -->
+  <div class="panel active" id="panel-act">
+
+    <!-- 문장 구조 안내 -->
+    <div class="struct-banner" style="background:#E1F5EE;border:0.5px solid #9FE1CB;">
+      <div class="sb-label" style="color:#085041;">💬 우리 반 공동 목표 문장 구조</div>
+      <div class="sb-frame" style="color:#0F6E56;">
+        <span class="sb-pill" style="background:#9FE1CB;color:#085041;">We are going to</span>
+        &nbsp;<span style="color:#3C3489; font-style:italic;">___________</span><span style="color:#0F6E56;">.</span>
+      </div>
+      <div class="sb-note" style="color:#0F6E56;">모둠에서 고른 최고의 아이디어를 <strong>We are going to...</strong>로 표현해요!</div>
+    </div>
+
+    <!-- 수준 탭 -->
+    <div class="level-tabs">
+      <div class="level-btn on-a" onclick="setLevel('A')" id="lb-A">
+        <span class="badge ba">Level A</span>
+        <span class="lv-name">Basic</span>
+        <span class="lv-desc">핵심 단어 채우기</span>
+      </div>
+      <div class="level-btn" onclick="setLevel('B')" id="lb-B">
+        <span class="badge bb">Level B</span>
+        <span class="lv-name">Intermediate</span>
+        <span class="lv-desc">완전한 문장 쓰기</span>
+      </div>
+      <div class="level-btn" onclick="setLevel('C')" id="lb-C">
+        <span class="badge bc">Level C</span>
+        <span class="lv-name">Advanced</span>
+        <span class="lv-desc">because 포함</span>
+      </div>
+    </div>
+
+    <!-- 주제 선택 -->
+    <div class="card">
+      <div class="card-label"><i class="ti ti-list" aria-hidden="true"></i> 주제를 골라봐요</div>
+      <div class="topic-grid" id="topicGrid"></div>
+    </div>
+
+    <!-- 문장 프레임 -->
+    <div class="card">
+      <div class="card-label"><i class="ti ti-template" aria-hidden="true"></i> 문장 프레임을 보고 빈칸을 채워봐요</div>
+      <div class="frame-box" id="frameBox">
+        <span class="blank">← 위에서 주제를 먼저 골라봐요 😊</span>
+      </div>
+      <div class="ex-wrap">
+        <div class="ex-label">💡 예시 표현을 눌러 참고해 봐요</div>
+        <div class="ex-tags" id="exTags"></div>
+      </div>
+    </div>
+
+    <!-- 결과 표시 (예시 클릭 시) -->
+    <div id="actResult"></div>
+
+    <!-- 직접 쓰기 -->
+    <div class="card write-section">
+      <div class="write-label">
+        <i class="ti ti-pencil" aria-hidden="true" style="font-size:15px;color:#1D9E75;"></i>
+        나만의 문장을 직접 써봐요
+      </div>
+      <textarea class="write-area" id="actWrite"
+        placeholder="We are going to ..."></textarea>
+      <div class="write-hint" id="actHint">주제를 고르면 힌트가 나타나요!</div>
+    </div>
+
+  </div>
+  <!-- end panel-act -->
+
+  <!-- ══════ PANEL: Reflection ══════ -->
+  <div class="panel" id="panel-ref">
+
+    <div class="ref-intro">
+      <div class="ri-label">🌱 Reflection — 나의 작은 실천</div>
+      <div class="ri-text">
+        우리 반 공동 목표를 이루기 위해 <strong>내가 할 수 있는 작은 노력</strong>을 영어로 표현해봐요.<br>
+        <strong style="color:#854F0B;">I'm going to...</strong>를 사용해서 나만의 실천 계획을 써봐요!
+      </div>
+    </div>
+
+    <!-- 공동 목표 선택 -->
+    <div class="card">
+      <div class="card-label"><i class="ti ti-target" aria-hidden="true"></i> 우리 반 공동 목표 중 하나를 선택해봐요</div>
+      <div class="goal-grid" id="goalGrid"></div>
+    </div>
+
+    <!-- 나의 실천 문장 구조 -->
+    <div class="struct-banner" style="background:#FAEEDA;border:0.5px solid #FAC775;">
+      <div class="sb-label" style="color:#633806;">💬 나의 실천 문장 구조</div>
+      <div class="sb-frame" style="color:#854F0B;">
+        <span class="sb-pill" style="background:#FAC775;color:#633806;">I'm going to</span>
+        &nbsp;<span style="color:#3C3489;font-style:italic;">___________</span><span style="color:#854F0B;">.</span>
+      </div>
+      <div class="sb-note" style="color:#854F0B;">공동 목표를 이루기 위해 내가 실천할 수 있는 작은 행동을 써봐요!</div>
+    </div>
+
+    <!-- 수준별 예시 (Reflection용) -->
+    <div class="card">
+      <div class="card-label"><i class="ti ti-template" aria-hidden="true"></i> 수준별 문장 프레임</div>
+      <div id="refFrameBox" class="frame-box">
+        <span class="blank">← 위에서 공동 목표를 먼저 선택해봐요</span>
+      </div>
+      <div class="ex-wrap">
+        <div class="ex-label">💡 예시 문장을 눌러 참고해 봐요</div>
+        <div class="ex-tags" id="refExTags"></div>
+      </div>
+    </div>
+
+    <!-- 수준 탭 (Reflection) -->
+    <div class="level-tabs">
+      <div class="level-btn on-a" onclick="setRefLevel('A')" id="rlb-A">
+        <span class="badge ba">Level A</span>
+        <span class="lv-name">Basic</span>
+        <span class="lv-desc">핵심 단어 채우기</span>
+      </div>
+      <div class="level-btn" onclick="setRefLevel('B')" id="rlb-B">
+        <span class="badge bb">Level B</span>
+        <span class="lv-name">Intermediate</span>
+        <span class="lv-desc">완전한 문장 쓰기</span>
+      </div>
+      <div class="level-btn" onclick="setRefLevel('C')" id="rlb-C">
+        <span class="badge bc">Level C</span>
+        <span class="lv-name">Advanced</span>
+        <span class="lv-desc">because 포함</span>
+      </div>
+    </div>
+
+    <!-- 직접 쓰기 (Reflection) -->
+    <div class="card">
+      <div class="write-label">
+        <i class="ti ti-pencil" aria-hidden="true" style="font-size:15px;color:#BA7517;"></i>
+        나의 실천 문장을 직접 써봐요
+      </div>
+      <textarea class="write-area" id="refWrite"
+        placeholder="I'm going to ..."
+        style="border-color:rgba(0,0,0,0.20);"
+        onfocus="this.style.borderColor='#BA7517';"
+        onblur="this.style.borderColor='rgba(0,0,0,0.20)';">
+      </textarea>
+      <div class="write-hint" id="refHint">공동 목표를 선택하면 힌트가 나타나요!</div>
+    </div>
+
+  </div>
+  <!-- end panel-ref -->
+
+</div>
+
+<script>
+/* ─── 데이터 ─── */
+const TOPICS = [
+  {emoji:'📚', kr:'수업에 집중하기',          en:'focus in class'},
+  {emoji:'🧹', kr:'교실 청소하기',            en:'keep our classroom clean'},
+  {emoji:'🤝', kr:'친구 돕기',                en:'help each other'},
+  {emoji:'👋', kr:'먼저 인사하기',            en:'say hello to everyone'},
+  {emoji:'🎵', kr:'음악시간에 크게 노래하기',  en:'sing loudly in music class'},
+  {emoji:'⚽', kr:'체육에 적극 참여하기',      en:'participate actively in P.E.'},
+  {emoji:'✋', kr:'발표 많이 하기',            en:'raise our hands and share ideas'},
+  {emoji:'🌱', kr:'화단 식물 돌보기',          en:'water the plants in our classroom'},
+  {emoji:'😊', kr:'친절하게 말하기',           en:'say kind words to each other'},
+  {emoji:'🍱', kr:'급식 예절 지키기',          en:'be polite at lunchtime'},
+  {emoji:'📖', kr:'책 많이 읽기',              en:'read books during free time'},
+  {emoji:'🏫', kr:'학교 규칙 지키기',          en:'follow school rules carefully'},
+];
+
+const CLASS_GOALS = [
+  {emoji:'🧹', kr:'교실을 깨끗하게 유지하기',    en:'keep our classroom clean'},
+  {emoji:'🤝', kr:'서로 도우며 함께 성장하기',   en:'help each other and grow together'},
+  {emoji:'📚', kr:'수업 시간에 집중하기',         en:'focus and learn together in class'},
+  {emoji:'😊', kr:'서로에게 친절한 말 하기',      en:'say kind words to each other'},
+  {emoji:'✋', kr:'모두 적극적으로 발표하기',     en:'raise our hands and share our ideas'},
+  {emoji:'🌱', kr:'교실 환경을 함께 가꾸기',     en:'take care of our classroom environment'},
+];
+
+// 수준별 프레임 & 예시 (활동 1·2 — We are going to)
+const ACT_LEVELS = {
+  A: {
+    frame: (en) => `We are going to <span class="fg">${en || '<span class="blank">___________</span>'}</span>.`,
+    examples: (en) => [
+      `We are going to ${en}.`,
+    ],
+    hint: (t) => `힌트: We are going to + <strong style="color:#3B6D11;">${t.en}</strong>.`,
+    tip: "'We are going to' 뒤에는 동사원형을 써요!",
+  },
+  B: {
+    frame: (en) => `We are going to <span class="fb">${en || '<span class="blank">___________</span>'}</span> <span class="blank">every day / together / carefully</span>.`,
+    examples: (en) => [
+      `We are going to ${en} every day.`,
+      `We are going to ${en} together.`,
+      `We are going to ${en} carefully.`,
+    ],
+    hint: (t) => `힌트: We are going to ${t.en} <strong style="color:#185FA5;">+ every day / together / carefully</strong>.`,
+    tip: "시간·방법을 나타내는 말을 뒤에 붙여 더 구체적으로 써봐요!",
+  },
+  C: {
+    frame: (en) => `We are going to <span class="fp">${en || '<span class="blank">___________</span>'}</span> because <span class="blank">___________</span>.`,
+    examples: (en) => [
+      `We are going to ${en} because it makes our class happy.`,
+      `We are going to ${en} because we grow stronger together.`,
+      `We are going to ${en} because it helps everyone learn.`,
+    ],
+    hint: (t) => `힌트: We are going to ${t.en} <strong style="color:#534AB7;">because + 이유</strong>.`,
+    tip: "because 뒤에는 '왜 그 계획을 세웠는지' 이유를 써봐요!",
+  },
+};
+
+// 수준별 프레임 & 예시 (Reflection — I'm going to)
+const REF_LEVELS = {
+  A: {
+    frame: (goal) => `I'm going to <span class="fg">${goal ? '<span class="blank">___________</span>' : '<span class="blank">___________</span>'}</span>.`,
+    examples: (goal) => goal ? [
+      `I'm going to ${goal.en.replace('keep our classroom','clean the')} every day.`,
+      `I'm going to help a friend who needs me.`,
+      `I'm going to say hi to my classmates.`,
+    ] : [
+      "I'm going to help my friends.",
+      "I'm going to study for the test.",
+      "I'm going to keep my desk clean.",
+    ],
+    hint: (goal) => goal
+      ? `힌트: I'm going to + <strong style="color:#3B6D11;">나의 작은 실천</strong>.`
+      : "힌트: I'm going to + 동사원형.",
+    tip: "'I'm going to' 뒤에는 동사원형을 써요!",
+  },
+  B: {
+    frame: () => `I'm going to <span class="fb"><span class="blank">___________</span></span> <span class="blank">every day / carefully / with a smile</span>.`,
+    examples: (goal) => goal ? [
+      `I'm going to help a friend every day.`,
+      `I'm going to listen carefully in every class.`,
+      `I'm going to greet my classmates with a smile.`,
+    ] : [
+      "I'm going to focus in class every day.",
+      "I'm going to be kind to my friends.",
+      "I'm going to clean my desk carefully.",
+    ],
+    hint: () => `힌트: I'm going to + 동사 + <strong style="color:#185FA5;">every day / carefully / with a smile</strong>.`,
+    tip: "시간·방법·태도를 나타내는 말을 붙여 더 자세히 써봐요!",
+  },
+  C: {
+    frame: () => `I'm going to <span class="fp"><span class="blank">___________</span></span> because <span class="blank">___________</span>.`,
+    examples: (goal) => goal ? [
+      `I'm going to say kind words because it makes our class feel warm.`,
+      `I'm going to help my friends because we grow stronger together.`,
+      `I'm going to focus in class because it helps all of us learn.`,
+    ] : [
+      "I'm going to clean up because a tidy room makes us happy.",
+      "I'm going to share my ideas because my voice matters.",
+      "I'm going to help friends because we grow together.",
+    ],
+    hint: () => `힌트: I'm going to + 동사 + <strong style="color:#534AB7;">because + 이유</strong>.`,
+    tip: "because 뒤에 내 행동이 우리 반에 어떤 도움이 되는지 써봐요!",
+  },
+};
+
+/* ─── 상태 ─── */
+let actLevel = 'A';
+let refLevel = 'A';
+let selectedTopic = null;
+let selectedGoal  = null;
+
+/* ─── 탭 전환 ─── */
+function switchTab(tab) {
+  document.getElementById('tab-act').className = 'main-tab' + (tab==='act' ? ' act-on' : '');
+  document.getElementById('tab-ref').className = 'main-tab' + (tab==='ref' ? ' ref-on' : '');
+  document.getElementById('panel-act').className = 'panel' + (tab==='act' ? ' active' : '');
+  document.getElementById('panel-ref').className = 'panel' + (tab==='ref' ? ' active' : '');
+}
+
+/* ─── 활동 1·2 Level ─── */
+function setLevel(l) {
+  actLevel = l;
+  ['A','B','C'].forEach(x => {
+    document.getElementById('lb-'+x).className = 'level-btn' + (x===l ? ' on-'+l.toLowerCase() : '');
+  });
+  updateActFrame();
+  document.getElementById('actResult').innerHTML = '';
+  document.getElementById('actWrite').value = '';
+  if (selectedTopic !== null) updateActHint();
+}
+
+/* ─── Reflection Level ─── */
+function setRefLevel(l) {
+  refLevel = l;
+  ['A','B','C'].forEach(x => {
+    document.getElementById('rlb-'+x).className = 'level-btn' + (x===l ? ' on-'+l.toLowerCase() : '');
+  });
+  updateRefFrame();
+  document.getElementById('refWrite').value = '';
+}
+
+/* ─── 주제 렌더 ─── */
+function renderTopics() {
+  document.getElementById('topicGrid').innerHTML = TOPICS.map((t,i) => `
+    <div class="topic-chip ${selectedTopic===i ? 'sel-'+actLevel.toLowerCase() : ''}"
+         onclick="selectTopic(${i})">
+      ${t.emoji}<br>${t.kr}
+    </div>`).join('');
+}
+
+function selectTopic(i) {
+  selectedTopic = i;
+  renderTopics();
+  updateActFrame();
+  updateActHint();
+  document.getElementById('actResult').innerHTML = '';
+  document.getElementById('actWrite').value = '';
+  document.getElementById('actWrite').placeholder = `We are going to ${TOPICS[i].en}...`;
+}
+
+function updateActFrame() {
+  const fb = document.getElementById('frameBox');
+  const et = document.getElementById('exTags');
+  const lvl = ACT_LEVELS[actLevel];
+  if (selectedTopic === null) {
+    fb.innerHTML = '<span class="blank">← 위에서 주제를 먼저 골라봐요 😊</span>';
+    et.innerHTML = '';
+    return;
+  }
+  const t = TOPICS[selectedTopic];
+  fb.innerHTML = lvl.frame(t.en);
+
+  const selClass = 'sel-' + actLevel.toLowerCase();
+  et.innerHTML = lvl.examples(t.en).map(ex => `
+    <span class="ex-tag" onclick="selectActEx(${JSON.stringify(ex)}, this)">
+      ${ex}
+    </span>`).join('');
+}
+
+function updateActHint() {
+  if (selectedTopic === null) return;
+  const t = TOPICS[selectedTopic];
+  const lvl = ACT_LEVELS[actLevel];
+  const hintEl = document.getElementById('actHint');
+  hintEl.innerHTML = lvl.hint(t) + (lvl.tip ? ` &nbsp;·&nbsp; <span style="color:#534AB7;">${lvl.tip}</span>` : '');
+}
+
+function selectActEx(ex, el) {
+  // 태그 선택 표시
+  document.querySelectorAll('#exTags .ex-tag').forEach(e => e.className = 'ex-tag');
+  el.className = 'ex-tag sel-' + actLevel.toLowerCase();
+
+  document.getElementById('actWrite').value = ex;
+
+  const colors = {A:'#3B6D11', B:'#185FA5', C:'#534AB7'};
+  document.getElementById('actResult').innerHTML = `
+    <div class="result-box">
+      <div class="result-top">
+        <span class="result-lbl">Level ${actLevel} 예시 문장</span>
+        <button class="copy-btn" onclick="copyTxt(this, ${JSON.stringify(ex)})">
+          <i class="ti ti-copy" aria-hidden="true" style="font-size:13px"></i> 복사
+        </button>
+      </div>
+      <div class="result-sent" style="color:${colors[actLevel]};">${ex}</div>
+      <div class="result-kr">이 문장을 참고해서 나만의 문장을 직접 써봐요! ✍️</div>
+      ${ACT_LEVELS[actLevel].tip ? `<div class="result-tip">💡 ${ACT_LEVELS[actLevel].tip}</div>` : ''}
+    </div>`;
+}
+
+/* ─── 공동 목표 렌더 ─── */
+function renderGoals() {
+  document.getElementById('goalGrid').innerHTML = CLASS_GOALS.map((g,i) => `
+    <div class="goal-chip ${selectedGoal===i ? 'selected' : ''}" onclick="selectGoal(${i})">
+      <span style="font-size:18px;">${g.emoji}</span>
+      <span>
+        <span class="gc-kr">${g.kr}</span>
+        <span class="gc-en">We are going to ${g.en}</span>
+      </span>
+    </div>`).join('');
+}
+
+function selectGoal(i) {
+  selectedGoal = i;
+  renderGoals();
+  updateRefFrame();
+  updateRefHint();
+  document.getElementById('refWrite').value = '';
+  document.getElementById('refWrite').placeholder = `I'm going to ...`;
+}
+
+function updateRefFrame() {
+  const fb = document.getElementById('refFrameBox');
+  const et = document.getElementById('refExTags');
+  const lvl = REF_LEVELS[refLevel];
+  const goal = selectedGoal !== null ? CLASS_GOALS[selectedGoal] : null;
+
+  fb.innerHTML = lvl.frame(goal);
+  et.innerHTML = lvl.examples(goal).map(ex => `
+    <span class="ex-tag" onclick="selectRefEx(${JSON.stringify(ex)}, this)">
+      ${ex}
+    </span>`).join('');
+}
+
+function updateRefHint() {
+  const lvl = REF_LEVELS[refLevel];
+  const goal = selectedGoal !== null ? CLASS_GOALS[selectedGoal] : null;
+  const hintEl = document.getElementById('refHint');
+  hintEl.innerHTML = lvl.hint(goal) + (lvl.tip ? ` &nbsp;·&nbsp; <span style="color:#534AB7;">${lvl.tip}</span>` : '');
+}
+
+function selectRefEx(ex, el) {
+  document.querySelectorAll('#refExTags .ex-tag').forEach(e => e.className = 'ex-tag');
+  el.className = 'ex-tag sel-' + refLevel.toLowerCase();
+  document.getElementById('refWrite').value = ex;
+}
+
+/* ─── 복사 ─── */
+async function copyTxt(btnEl, text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    const orig = btnEl.innerHTML;
+    btnEl.innerHTML = '<i class="ti ti-check" style="font-size:13px"></i> 복사됨';
+    setTimeout(() => { btnEl.innerHTML = orig; }, 1500);
+  } catch(e) {
+    alert('복사에 실패했어요. 직접 선택해서 복사해 주세요.');
+  }
+}
+
+/* ─── 초기화 ─── */
+renderTopics();
+renderGoals();
+updateRefFrame();
+</script>
+</body>
+</html>
